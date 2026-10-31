@@ -1,22 +1,22 @@
-import * as lib from "./lib.js";
+import * as lib from "./lib/lib.js";
 
 const canvas = document.getElementById("mycanvas");
 const ctx = canvas.getContext("2d");
 
 let faseGame = "BIDIK_P1";
 
-let player1 = lib.buatPemain(
+let player1 = lib.buatBolaRandom(
     canvas.width / 4,
     canvas.height / 2,
     { r: 30, g: 130, b: 240 }, // Warna Biru
     0                          // Menghadap ke kanan
 );
 
-let player2 = lib.buatPemain(
+let player2 = lib.buatBolaFibonacci(
     (canvas.width * 3) / 4,
     canvas.height / 2,
-    { r: 230, g: 45, b: 45 },  // Warna Merah
-    Math.PI                    // Menghadap ke kiri
+    { r: 230, g: 45, b: 45 },
+    Math.PI
 );
 
 const panjangGarisBidik = 40;
@@ -59,13 +59,13 @@ canvas.addEventListener("click", () => {
 });
 
 function resetPertandingan() {
-    player1 = lib.buatPemain(
+    player1 = lib.buatBolaRandom(
         canvas.width / 4,
         canvas.height / 2,
         { r: 30, g: 130, b: 240 },
         0
     );
-    player2 = lib.buatPemain(
+    player2 = lib.buatBolaFibonacci(
         (canvas.width * 3) / 4,
         canvas.height / 2,
         { r: 230, g: 45, b: 45 },
@@ -83,6 +83,15 @@ function cekTabrakanBola() {
     if (jarak < radiusTotal) {
         player1.hp = Math.max(0, player1.hp - player2.damage);
         player2.hp = Math.max(0, player2.hp - player1.damage);
+
+        if (player1.tipe === "RANDOM") {
+            player1.damage = lib.acakDamageAdil(player1.damageMin, player1.damageMaks);
+        }
+
+        if (player2.tipe === "FIBONACCI") {
+            player2.hitCount += 1;
+            player2.damage = lib.hitungFibonacci(player2.hitCount);
+        }
 
         const nx = dx / (jarak || 1);
         const ny = dy / (jarak || 1);
@@ -157,14 +166,14 @@ function render() {
     ctx.fillText("Player 1 (Biru)", 15, 25);
     ctx.font = "12px sans-serif";
     ctx.fillText(`HP: ${player1.hp}/${player1.hpMaks}`, 15, 43);
-    ctx.fillText(`Damage: ${player1.damage} (Tetap)`, 15, 59);
+    ctx.fillText(`Damage: ${player1.damage} (Acak)`, 15, 59);
 
     ctx.fillStyle = "#d02020";
     ctx.font = "bold 13px sans-serif";
     ctx.fillText("Player 2 (Merah)", canvas.width - 130, 25);
     ctx.font = "12px sans-serif";
     ctx.fillText(`HP: ${player2.hp}/${player2.hpMaks}`, canvas.width - 130, 43);
-    ctx.fillText(`Damage: ${player2.damage} (Tetap)`, canvas.width - 130, 59);
+    ctx.fillText(`Damage: ${player2.damage} (Bertahap)`, canvas.width - 130, 59);
 
     ctx.textAlign = "center";
     if (faseGame === "BIDIK_P1") {
