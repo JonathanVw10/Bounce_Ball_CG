@@ -13,8 +13,8 @@ let faseGame = "BIDIK_P1";
 let player1 = lib.buatBolaRandom(
     canvas.width / 4,
     canvas.height / 2,
-    { r: 30, g: 130, b: 240 }, // Warna Biru
-    0                          // Menghadap ke kanan
+    { r: 30, g: 130, b: 240 },
+    0
 );
 
 let player2 = lib.buatBolaFibonacci(
@@ -26,6 +26,7 @@ let player2 = lib.buatBolaFibonacci(
 
 const panjangGarisBidik = 40;
 const warnaGarisBidik = { r: 90, g: 90, b: 90 };
+let efek = { aktif: false, x: 0, y: 0, r: 20, rays: 12, mengecil: true };
 
 canvas.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
@@ -76,6 +77,7 @@ function resetPertandingan() {
         { r: 230, g: 45, b: 45 },
         Math.PI
     );
+    efek.aktif = false;
     faseGame = "BIDIK_P1";
 }
 
@@ -118,6 +120,15 @@ function cekTabrakanBola() {
         player2.posisi.x += (overlap / 2) * nx;
         player2.posisi.y += (overlap / 2) * ny;
 
+        efek = {
+            aktif: true,
+            x: (player1.posisi.x + player2.posisi.x) / 2,
+            y: (player1.posisi.y + player2.posisi.y) / 2,
+            r: 20,
+            rays: Math.floor(Math.random() * 12) + 8,
+            mengecil: true
+        };
+
         if (player1.hp <= 0 || player2.hp <= 0) {
             faseGame = "SELESAI";
         }
@@ -125,6 +136,20 @@ function cekTabrakanBola() {
 }
 
 function update() {
+    if (efek.aktif) {
+        if (efek.mengecil) {
+            efek.r -= 3;
+            if (efek.r <= 4) {
+                efek.mengecil = false;
+            }
+        } else {
+            efek.r += 4;
+            if (efek.r >= 28) {
+                efek.aktif = false;
+            }
+        }
+    }
+
     if (faseGame !== "TANDING") return;
 
     let T1 = mat.create_translation(player1.kecepatan.x, player1.kecepatan.y);
@@ -145,7 +170,6 @@ function render() {
 
     lib.image_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    // Garis bidik
     if (faseGame === "BIDIK_P1") {
         let R1 = mat.create_rotation(player1.sudutBidik);
         let T1 = mat.create_translation(player1.posisi.x, player1.posisi.y);
@@ -163,25 +187,28 @@ function render() {
     lib.lingkaran_berisi(player1.posisi.x, player1.posisi.y, player1.radius, player1.warna);
     lib.lingkaran_berisi(player2.posisi.x, player2.posisi.y, player2.radius, player2.warna);
 
-    lib.gambarBarHp(player1);
-    lib.gambarBarHp(player2);
+    if (efek.aktif) {
+        lib.efekTabrakan(efek.x, efek.y, efek.rays, efek.r, { r: 255, g: 140, b: 0 });
+    }
+
+    lib.gambarBarHp(player1, 15, 49);
+    lib.gambarBarHp(player2, canvas.width - 130, 49);
 
     ctx.putImageData(lib.image_data, 0, 0);
 
-    // Info HUD
     ctx.fillStyle = "#1e60d0";
     ctx.font = "bold 13px sans-serif";
     ctx.fillText("Player 1 (Biru)", 15, 25);
     ctx.font = "12px sans-serif";
     ctx.fillText(`HP: ${player1.hp}/${player1.hpMaks}`, 15, 43);
-    ctx.fillText(`Damage: ${player1.damage} (Acak)`, 15, 59);
+    ctx.fillText(`Damage: ${player1.damage} (Acak)`, 15, 70);
 
     ctx.fillStyle = "#d02020";
     ctx.font = "bold 13px sans-serif";
     ctx.fillText("Player 2 (Merah)", canvas.width - 130, 25);
     ctx.font = "12px sans-serif";
     ctx.fillText(`HP: ${player2.hp}/${player2.hpMaks}`, canvas.width - 130, 43);
-    ctx.fillText(`Damage: ${player2.damage} (Bertahap)`, canvas.width - 130, 59);
+    ctx.fillText(`Damage: ${player2.damage} (Bertahap)`, canvas.width - 130, 70);
 
     ctx.textAlign = "center";
     if (faseGame === "BIDIK_P1") {
