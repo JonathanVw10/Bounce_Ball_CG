@@ -1,7 +1,12 @@
-import * as lib from "./lib/lib.js";
+import GrafLib from "./lib/lib.js";
+import MatrixClass from "./lib/matrix.js";
 
 const canvas = document.getElementById("mycanvas");
 const ctx = canvas.getContext("2d");
+const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+let lib = new GrafLib(canvas.width, canvas.height, img);
+let mat = new MatrixClass();
 
 let faseGame = "BIDIK_P1";
 
@@ -85,7 +90,7 @@ function cekTabrakanBola() {
         player2.hp = Math.max(0, player2.hp - player1.damage);
 
         if (player1.tipe === "RANDOM") {
-            player1.damage = lib.acakDamageAdil(player1.damageMin, player1.damageMaks);
+            player1.damage = lib.acakDamageAdil();
         }
 
         if (player2.tipe === "FIBONACCI") {
@@ -122,8 +127,11 @@ function cekTabrakanBola() {
 function update() {
     if (faseGame !== "TANDING") return;
 
-    player1.posisi = lib.translasi(player1.posisi, player1.kecepatan);
-    player2.posisi = lib.translasi(player2.posisi, player2.kecepatan);
+    let T1 = mat.create_translation(player1.kecepatan.x, player1.kecepatan.y);
+    player1.posisi = mat.transform_point(player1.posisi, T1);
+
+    let T2 = mat.create_translation(player2.kecepatan.x, player2.kecepatan.y);
+    player2.posisi = mat.transform_point(player2.posisi, T2);
 
     lib.pantulkanDinding(player1, canvas.width, canvas.height);
     lib.pantulkanDinding(player2, canvas.width, canvas.height);
@@ -135,30 +143,30 @@ function render() {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    lib.image_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
     // Garis bidik
     if (faseGame === "BIDIK_P1") {
-        const titikUjung = {
-            x: player1.posisi.x + Math.cos(player1.sudutBidik) * panjangGarisBidik,
-            y: player1.posisi.y + Math.sin(player1.sudutBidik) * panjangGarisBidik
-        };
-        lib.dda_line(img, player1.posisi.x, player1.posisi.y, titikUjung.x, titikUjung.y, warnaGarisBidik);
+        let R1 = mat.create_rotation(player1.sudutBidik);
+        let T1 = mat.create_translation(player1.posisi.x, player1.posisi.y);
+        let M1 = mat.multiply(T1, R1);
+        const titikUjung = mat.transform_point({ x: panjangGarisBidik, y: 0 }, M1);
+        lib.dda_line(player1.posisi.x, player1.posisi.y, titikUjung.x, titikUjung.y, warnaGarisBidik);
     } else if (faseGame === "BIDIK_P2") {
-        const titikUjung = {
-            x: player2.posisi.x + Math.cos(player2.sudutBidik) * panjangGarisBidik,
-            y: player2.posisi.y + Math.sin(player2.sudutBidik) * panjangGarisBidik
-        };
-        lib.dda_line(img, player2.posisi.x, player2.posisi.y, titikUjung.x, titikUjung.y, warnaGarisBidik);
+        let R2 = mat.create_rotation(player2.sudutBidik);
+        let T2 = mat.create_translation(player2.posisi.x, player2.posisi.y);
+        let M2 = mat.multiply(T2, R2);
+        const titikUjung = mat.transform_point({ x: panjangGarisBidik, y: 0 }, M2);
+        lib.dda_line(player2.posisi.x, player2.posisi.y, titikUjung.x, titikUjung.y, warnaGarisBidik);
     }
 
-    lib.lingkaran_berisi(img, player1.posisi.x, player1.posisi.y, player1.radius, player1.warna);
-    lib.lingkaran_berisi(img, player2.posisi.x, player2.posisi.y, player2.radius, player2.warna);
+    lib.lingkaran_berisi(player1.posisi.x, player1.posisi.y, player1.radius, player1.warna);
+    lib.lingkaran_berisi(player2.posisi.x, player2.posisi.y, player2.radius, player2.warna);
 
-    lib.gambarBarHp(img, player1);
-    lib.gambarBarHp(img, player2);
+    lib.gambarBarHp(player1);
+    lib.gambarBarHp(player2);
 
-    ctx.putImageData(img, 0, 0);
+    ctx.putImageData(lib.image_data, 0, 0);
 
     // Info HUD
     ctx.fillStyle = "#1e60d0";
