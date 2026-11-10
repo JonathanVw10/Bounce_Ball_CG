@@ -170,6 +170,9 @@ function render() {
 
     lib.image_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
+    lib.lingkaran_berisi(player1.posisi.x, player1.posisi.y, player1.radius, player1.warna);
+    lib.lingkaran_berisi(player2.posisi.x, player2.posisi.y, player2.radius, player2.warna);
+
     if (faseGame === "BIDIK_P1") {
         let R1 = mat.create_rotation(player1.sudutBidik);
         let T1 = mat.create_translation(player1.posisi.x, player1.posisi.y);
@@ -183,9 +186,6 @@ function render() {
         const titikUjung = mat.transform_point({ x: panjangGarisBidik, y: 0 }, M2);
         lib.dda_line(player2.posisi.x, player2.posisi.y, titikUjung.x, titikUjung.y, warnaGarisBidik);
     }
-
-    lib.lingkaran_berisi(player1.posisi.x, player1.posisi.y, player1.radius, player1.warna);
-    lib.lingkaran_berisi(player2.posisi.x, player2.posisi.y, player2.radius, player2.warna);
 
     if (efek.aktif) {
         lib.efekTabrakan(efek.x, efek.y, efek.rays, efek.r, { r: 255, g: 140, b: 0 });
