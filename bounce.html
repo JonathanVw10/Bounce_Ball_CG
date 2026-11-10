@@ -5,17 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bounce Ball</title>
     <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+        }
+
+        #game-container {
+            position: relative;
+            width: 500px;
+            margin: 0 auto;
+        }
+
         canvas {
             border: 2px solid black;
             display: block;
-            margin: 20px auto;
+            margin: 0 auto;
             cursor: crosshair;
+        }
+
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        #p1-info {
+            text-align: left;
+            color: #1e60d0;
+        }
+
+        #p2-info {
+            text-align: right;
+            color: #d02020;
+        }
+
+        .player-title {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        #status-info {
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            min-height: 40px;
+        }
+
+        #winner-text {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="mycanvas" width="500" height="500"></canvas>
+    <div id="game-container">
+        <div id="hud">
+            <div id="p1-info">
+                <div class="player-title">Player 1 (Biru)</div>
+                <div id="p1-hp">HP: 100/100</div>
+                <div id="p1-damage">Damage: -</div>
+            </div>
+            <div id="p2-info">
+                <div class="player-title">Player 2 (Merah)</div>
+                <div id="p2-hp">HP: 100/100</div>
+                <div id="p2-damage">Damage: -</div>
+            </div>
+        </div>
+
+        <canvas id="mycanvas" width="500" height="500"></canvas>
+
+        <div id="status-info">
+            <div id="winner-text"></div>
+            <div id="instruction-text"></div>
+        </div>
+    </div>
 
     <script type="module" src="index.js"></script>
 </body>

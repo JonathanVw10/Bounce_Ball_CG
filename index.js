@@ -2,11 +2,18 @@ import GrafLib from "./lib/lib.js";
 import MatrixClass from "./lib/matrix.js";
 
 const canvas = document.getElementById("mycanvas");
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
 const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
 let lib = new GrafLib(canvas.width, canvas.height, img);
 let mat = new MatrixClass();
+
+const p1HpEl = document.querySelector("#p1-hp");
+const p1DamageEl = document.querySelector("#p1-damage");
+const p2HpEl = document.querySelector("#p2-hp");
+const p2DamageEl = document.querySelector("#p2-damage");
+const winnerTextEl = document.querySelector("#winner-text");
+const instructionTextEl = document.querySelector("#instruction-text");
 
 let faseGame = "BIDIK_P1";
 
@@ -164,10 +171,43 @@ function update() {
     cekTabrakanBola();
 }
 
-function render() {
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+function updateUI() {
+    p1HpEl.textContent = `HP: ${player1.hp}/${player1.hpMaks}`;
+    p1DamageEl.textContent = `Damage: ${player1.damage} (Acak)`;
 
+    p2HpEl.textContent = `HP: ${player2.hp}/${player2.hpMaks}`;
+    p2DamageEl.textContent = `Damage: ${player2.damage} (Bertahap)`;
+
+    if (faseGame === "BIDIK_P1") {
+        winnerTextEl.textContent = "";
+        instructionTextEl.style.color = "#1e60d0";
+        instructionTextEl.textContent = "Giliran Player 1: Arahkan kursor lalu KLIK untuk tentukan arah pantulan";
+    } else if (faseGame === "BIDIK_P2") {
+        winnerTextEl.textContent = "";
+        instructionTextEl.style.color = "#d02020";
+        instructionTextEl.textContent = "Giliran Player 2: Arahkan kursor lalu KLIK untuk tentukan arah pantulan";
+    } else if (faseGame === "TANDING") {
+        winnerTextEl.textContent = "";
+        instructionTextEl.style.color = "#555";
+        instructionTextEl.textContent = "Bola saling bertabrakan dan mengurangi HP lawan!";
+    } else if (faseGame === "SELESAI") {
+        if (player1.hp > 0 && player2.hp <= 0) {
+            winnerTextEl.style.color = "#1e60d0";
+            winnerTextEl.textContent = "PLAYER 1 (BIRU) MENANG!";
+        } else if (player2.hp > 0 && player1.hp <= 0) {
+            winnerTextEl.style.color = "#d02020";
+            winnerTextEl.textContent = "PLAYER 2 (MERAH) MENANG!";
+        } else {
+            winnerTextEl.style.color = "#000";
+            winnerTextEl.textContent = "PERTANDINGAN SERI!";
+        }
+        instructionTextEl.style.color = "#333";
+        instructionTextEl.textContent = "KLIK DI MANA SAJA UNTUK MAIN LAGI";
+    }
+}
+
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     lib.image_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
     lib.lingkaran_berisi(player1.posisi.x, player1.posisi.y, player1.radius, player1.warna);
@@ -191,55 +231,12 @@ function render() {
         lib.efekTabrakan(efek.x, efek.y, efek.rays, efek.r, { r: 255, g: 140, b: 0 });
     }
 
-    lib.gambarBarHp(player1, 15, 49);
-    lib.gambarBarHp(player2, canvas.width - 130, 49);
+    lib.gambarBarHp(player1, 15, 20);
+    lib.gambarBarHp(player2, canvas.width - 115, 20);
 
     ctx.putImageData(lib.image_data, 0, 0);
 
-    ctx.fillStyle = "#1e60d0";
-    ctx.font = "bold 13px sans-serif";
-    ctx.fillText("Player 1 (Biru)", 15, 25);
-    ctx.font = "12px sans-serif";
-    ctx.fillText(`HP: ${player1.hp}/${player1.hpMaks}`, 15, 43);
-    ctx.fillText(`Damage: ${player1.damage} (Acak)`, 15, 70);
-
-    ctx.fillStyle = "#d02020";
-    ctx.font = "bold 13px sans-serif";
-    ctx.fillText("Player 2 (Merah)", canvas.width - 130, 25);
-    ctx.font = "12px sans-serif";
-    ctx.fillText(`HP: ${player2.hp}/${player2.hpMaks}`, canvas.width - 130, 43);
-    ctx.fillText(`Damage: ${player2.damage} (Bertahap)`, canvas.width - 130, 70);
-
-    ctx.textAlign = "center";
-    if (faseGame === "BIDIK_P1") {
-        ctx.fillStyle = "#1e60d0";
-        ctx.font = "bold 13px sans-serif";
-        ctx.fillText("Giliran Player 1: Arahkan kursor lalu KLIK untuk tentukan arah pantulan", canvas.width / 2, canvas.height - 18);
-    } else if (faseGame === "BIDIK_P2") {
-        ctx.fillStyle = "#d02020";
-        ctx.font = "bold 13px sans-serif";
-        ctx.fillText("Giliran Player 2: Arahkan kursor lalu KLIK untuk tentukan arah pantulan", canvas.width / 2, canvas.height - 18);
-    } else if (faseGame === "TANDING") {
-        ctx.fillStyle = "#555";
-        ctx.font = "12px sans-serif";
-        ctx.fillText("Bola saling bertabrakan dan mengurangi HP lawan!", canvas.width / 2, canvas.height - 18);
-    } else if (faseGame === "SELESAI") {
-        ctx.fillStyle = "#000";
-        ctx.font = "bold 18px sans-serif";
-        if (player1.hp > 0 && player2.hp <= 0) {
-            ctx.fillStyle = "#1e60d0";
-            ctx.fillText("PLAYER 1 (BIRU) MENANG!", canvas.width / 2, canvas.height / 2 - 40);
-        } else if (player2.hp > 0 && player1.hp <= 0) {
-            ctx.fillStyle = "#d02020";
-            ctx.fillText("PLAYER 2 (MERAH) MENANG!", canvas.width / 2, canvas.height / 2 - 40);
-        } else {
-            ctx.fillText("PERTANDINGAN SERI!", canvas.width / 2, canvas.height / 2 - 40);
-        }
-        ctx.fillStyle = "#333";
-        ctx.font = "13px sans-serif";
-        ctx.fillText("KLIK DI MANA SAJA UNTUK MAIN LAGI", canvas.width / 2, canvas.height / 2 - 15);
-    }
-    ctx.textAlign = "left";
+    updateUI();
 }
 
 function loop() {
